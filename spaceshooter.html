@@ -40,7 +40,7 @@ canvas {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: all 0.05s;
+  transition: transform 0.05s;
 }
 .arcade-btn.pressed {
   box-shadow: none;
@@ -89,7 +89,7 @@ canvas {
   -webkit-tap-highlight-color: transparent;
   
   
-  transition: transform 0.05s, box-shadow 0.05s; 
+  transition: transform 0.05s; 
 }
 
 #shoot.pressed {
@@ -450,7 +450,7 @@ function drawShip() {
   
   const p = 35 / 15; 
 
-// --- PLAYER ENGINE FLAME (NEW) ---
+// --- ENGINE FLAME ---
   const time = Date.now() * 0.01;
   
   for (let j = 0; j < 3; j++) {
@@ -635,25 +635,6 @@ const baseColors = [
     ctx.ellipse(e.x, e.y, 18, 20, 0, 0, Math.PI*2);
     ctx.fill();
 
-        // ===== Reflection =====
-    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-    ctx.beginPath();
-    
-    // Start near the very top
-    ctx.moveTo(e.x - 4, e.y - 16); 
-    ctx.quadraticCurveTo(
-      e.x - 18, e.y - 12, 
-      e.x - 14, e.y + 5   
-    );
-    
-    // Inner curve: Tapering back up to the top
-    ctx.quadraticCurveTo(
-      e.x - 12, e.y - 5,   // Control point for a thin shape
-      e.x - 5, e.y - 18    // Back to the top start point
-    );
-    
-    ctx.fill();
-
     // ===== Balloon Knot (Trapezium) =====
     ctx.fillStyle = e.color;
     ctx.beginPath();
@@ -664,52 +645,125 @@ const baseColors = [
     ctx.closePath();
     ctx.fill();
 
-
     // ===== Eyes =====
-    const eyeOffsetX = 6;
-    const eyeOffsetY = -4;
+const eyeOffsetX = 6;
+const eyeOffsetY = -4;
 
-    e.blinkCounter--;
-    const isBlinking = e.blinkCounter <= 0 && e.blinkCounter > -10;
-    if(e.blinkCounter <= -10) e.blinkCounter = Math.floor(Math.random()*200);
+const goggleRadius = 5.5;
+const goggleStroke = 3;
 
-    const dx = ship.x - e.x;
-    const dy = ship.y - e.y;
-    const angle = Math.atan2(dy, dx);
-    const pupilDist = 2;
+e.blinkCounter--;
+const isBlinking = e.blinkCounter <= 0 && e.blinkCounter > -10;
+if (e.blinkCounter <= -10) {
+  e.blinkCounter = Math.floor(Math.random() * 200);
+}
 
-    // Left eye
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.arc(e.x - eyeOffsetX, e.y + eyeOffsetY, 4, 0, Math.PI*2);
-    ctx.fill();
+// Look direction
+const dx = ship.x - e.x;
+const dy = ship.y - e.y;
+const angle = Math.atan2(dy, dx);
+const pupilDist = 2;
 
-    // Right eye
-    ctx.beginPath();
-    ctx.arc(e.x + eyeOffsetX, e.y + eyeOffsetY, 4, 0, Math.PI*2);
-    ctx.fill();
+// === Goggle strap ===
+ctx.strokeStyle = "#555";
+ctx.lineWidth = 5;
+ctx.beginPath();
+ctx.moveTo(e.x - 19.5, e.y + eyeOffsetY);
+ctx.lineTo(e.x + 19.5, e.y + eyeOffsetY);
+ctx.stroke();
 
-    // Pupils
-    if(!isBlinking){
-      ctx.fillStyle = "#000";
-      ctx.beginPath();
-      ctx.arc(e.x - eyeOffsetX + Math.cos(angle)*pupilDist, e.y + eyeOffsetY + Math.sin(angle)*pupilDist, 2, 0, Math.PI*2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(e.x + eyeOffsetX + Math.cos(angle)*pupilDist, e.y + eyeOffsetY + Math.sin(angle)*pupilDist, 2, 0, Math.PI*2);
-      ctx.fill();
-    } else {
-      ctx.strokeStyle = "#000";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(e.x - eyeOffsetX - 3, e.y + eyeOffsetY);
-      ctx.lineTo(e.x - eyeOffsetX + 3, e.y + eyeOffsetY);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(e.x + eyeOffsetX - 3, e.y + eyeOffsetY);
-      ctx.lineTo(e.x + eyeOffsetX + 3, e.y + eyeOffsetY);
-      ctx.stroke();
-    }
+// === Goggle rims ===
+ctx.strokeStyle = "#bbb";
+ctx.lineWidth = goggleStroke;
+
+// Left rim
+ctx.beginPath();
+ctx.arc(
+  e.x - eyeOffsetX,
+  e.y + eyeOffsetY,
+  goggleRadius,
+  0,
+  Math.PI * 2
+);
+ctx.stroke();
+
+// Right rim
+ctx.beginPath();
+ctx.arc(
+  e.x + eyeOffsetX,
+  e.y + eyeOffsetY,
+  goggleRadius,
+  0,
+  Math.PI * 2
+);
+ctx.stroke();
+
+// === Eyeballs ===
+ctx.fillStyle = "#fff";
+
+// Left eye
+ctx.beginPath();
+ctx.arc(
+  e.x - eyeOffsetX,
+  e.y + eyeOffsetY,
+  4,
+  0,
+  Math.PI * 2
+);
+ctx.fill();
+
+// Right eye
+ctx.beginPath();
+ctx.arc(
+  e.x + eyeOffsetX,
+  e.y + eyeOffsetY,
+  4,
+  0,
+  Math.PI * 2
+);
+ctx.fill();
+
+// === Pupils / Blink ===
+if (!isBlinking) {
+  ctx.fillStyle = "#000";
+
+  // Left pupil
+  ctx.beginPath();
+  ctx.arc(
+    e.x - eyeOffsetX + Math.cos(angle) * pupilDist,
+    e.y + eyeOffsetY + Math.sin(angle) * pupilDist,
+    2,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
+
+  // Right pupil
+  ctx.beginPath();
+  ctx.arc(
+    e.x + eyeOffsetX + Math.cos(angle) * pupilDist,
+    e.y + eyeOffsetY + Math.sin(angle) * pupilDist,
+    2,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
+} else {
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 2;
+
+  // Left blink
+  ctx.beginPath();
+  ctx.moveTo(e.x - eyeOffsetX - 3, e.y + eyeOffsetY);
+  ctx.lineTo(e.x - eyeOffsetX + 3, e.y + eyeOffsetY);
+  ctx.stroke();
+
+  // Right blink
+  ctx.beginPath();
+  ctx.moveTo(e.x + eyeOffsetX - 3, e.y + eyeOffsetY);
+  ctx.lineTo(e.x + eyeOffsetX + 3, e.y + eyeOffsetY);
+  ctx.stroke();
+}
         // ===== Wavy String =====
     ctx.strokeStyle = "#555";
     ctx.lineWidth = 1;
@@ -719,7 +773,7 @@ const baseColors = [
     const stringLength = 20;
     const waveFrequency = 0.2; // How many bumps
     const waveAmplitude = 2;   // How wide the waves are
-    const speed = Date.now() * 0.002; // Animation speed
+    const speed = Date.now() * 0.002;
 
     ctx.moveTo(e.x, startY);
 
@@ -733,13 +787,13 @@ const baseColors = [
   });
 }
 function drawHeart(x, y, size) {
-  // Draw black border first (thicker)
-  ctx.fillStyle = "#000"; // black
-  ctx.fillRect(x + size - 2, y - 2, size + 4, size + 4);
-  ctx.fillRect(x + size * 3 - 2, y - 2, size + 4, size + 4);
-  ctx.fillRect(x - 2, y + size - 2, size * 5 + 4, size * 2 + 4);
-  ctx.fillRect(x + size - 2, y + size * 3 - 2, size * 3 + 4, size + 4);
-  ctx.fillRect(x + size * 2 - 2, y + size * 4 - 2, size + 4, size + 4);
+  // Draw black border (smaller)
+  ctx.fillStyle = "#000";
+  ctx.fillRect(x + size - 1, y - 1, size + 2, size + 2);
+  ctx.fillRect(x + size * 3 - 1, y - 1, size + 2, size + 2);
+  ctx.fillRect(x - 1, y + size - 1, size * 5 + 2, size * 2 + 2);
+  ctx.fillRect(x + size - 1, y + size * 3 - 1, size * 3 + 2, size + 2);
+  ctx.fillRect(x + size * 2 - 1, y + size * 4 - 1, size + 2, size + 2);
 
   // Draw red heart on top
   ctx.fillStyle = "#f00"; // red
@@ -787,7 +841,6 @@ function drawEnemyBullets() {
     if (b.y > canvas.height + 20) enemyBullets.splice(i, 1);
   }
 }
-
 
 function drawUI() {
   const padding = 16;
