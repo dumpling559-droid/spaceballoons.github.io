@@ -432,7 +432,7 @@ function drawItems() {
       if (lives < 3) {
         lives++;
       } else {
-        score += 10000;
+        score += 3000;
       }
       items.splice(i, 1);
       playHpUpSound();
@@ -556,7 +556,6 @@ function drawBullets() {
     }
 
     // --- 2. SLEEK MISSILE BODY ---
-    // Red Nose Cone (Slimmer)
     ctx.fillStyle = "#ff0000";
     ctx.beginPath();
     ctx.moveTo(b.x + 1, b.y);       // Sharp tip
@@ -1016,7 +1015,7 @@ function processPlayerDeath() {
   if (lives <= 0) {
     gameOver = true;
     setTimeout(() => {
-      alert("GAME OVER\nScore: " + score);
+      alert("GAME OVER\nScore: " + score + "/nWave: " + wave);
       location.reload(); 
     }, 100);
   } else {
@@ -1055,7 +1054,7 @@ function increaseDifficulty() {
 function update(){
   if(gameOver) return;
 
-  if (wave % 10 === 0 && ! hpIconSpawnedThisWave) {
+  if (wave % 5 === 0 && ! hpIconSpawnedThisWave) {
     spawnHPIcon();
     hpIconSpawnedThisWave = true;
   }
